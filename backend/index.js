@@ -8,7 +8,6 @@ const app = express();
 app.use(express.json());
 
 
-
 app.get('/', (request, response) => {
     console.log(request)
     return response.status(234).send('Welcome')
@@ -18,7 +17,7 @@ app.get('/', (request, response) => {
 app.post('/books', async (request, response) => {
     try{
         if(!request.body.title || !request.body.author || !request.body.publishYear){
-            return response.status(400).send({message: 'Send all requred fields: title, author, publishYear'});
+            return response.status(400).send({message: 'Send all required fields: title, author, publishYear'});
         }
         const newBook = {
             title: request.body.title,
@@ -50,7 +49,7 @@ app.get("/books", async (request,response) => {
 });
 
 
-//Rouse to get 1 book
+//Route to get 1 book
 app.get("/books/:id", async (request,response) => {
     try{
         const {id} = request.params;
@@ -64,6 +63,41 @@ app.get("/books/:id", async (request,response) => {
 });
 
 
+//Route to update book
+app.put("/books/:id", async (request, response) => {
+    try{
+        if(!request.body.title || !request.body.author || !request.body.publishYear){
+            return response.status(400).send({message: 'Send all required fields: title, author, publishYear'});
+        }
+        const {id} = request.params;
+        const result = await Book.findByIdAndUpdate(id, request.body);
+        if(!result){
+            return response.status(404).json({message: "Book not found"});
+        }
+        return response.status(200).send({message: "Book updated successfully"});
+    }
+    catch(error){
+        console.log(error.message);
+        response.status(500).send({message: error.message});
+    }
+});
+
+//Route to delete book
+app.delete("/books/:id", async (request,response) => {
+    try{
+        const {id} = request.params;
+        const result = await Book.findByIdAndDelete(id);
+        if(!result){
+            return response.status(404).json({message: "Book not found"});
+        }
+        return response.status(200).send({message: "Book deleted successfully"});
+    }
+    catch(error){
+        console.log(error.message);
+        response.status(500).send({message: error.message});
+    }
+});
+
 //Connects to database and starts express app listening on PORT
 mongoose.connect(mongoDBURL)
     .then(() => {
@@ -75,4 +109,3 @@ mongoose.connect(mongoDBURL)
     .catch((err) => {
         console.log(err);
     });
-
